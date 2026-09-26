@@ -26,6 +26,7 @@ struct Student {
 //   newScore : 새 점수
 void updateScore(Student& student, int newScore) {
     // TODO
+    student.score= newScore;
 }
 
 // student.score >= passingScore 이면 true, 미만이면 false 를 반환합니다.
@@ -33,7 +34,11 @@ void updateScore(Student& student, int newScore) {
 //   passingScore : 합격 기준 점수
 bool isPassed(const Student& student, int passingScore) {
     // TODO
-    return false;
+    if( student.score >= passingScore){
+        return true;
+    }else{
+        return false;
+    }
 }
 
 // student 의 id 와 score 를 출력합니다.
@@ -41,6 +46,7 @@ bool isPassed(const Student& student, int passingScore) {
 //   출력 형식: "ID: <id>  Score: <score>\n"
 void printStudent(const Student& student) {
     // TODO
+    std :: cout << "ID: " << student.id <<"  Score: "<< student.score<<"\n";
 }
 
 // score 가 가장 높은 학생의 참조를 반환합니다.
@@ -49,5 +55,11 @@ void printStudent(const Student& student) {
 //   반환값   : 최고 점수 학생에 대한 Student&
 Student& findTopScorer(Student* students, int n) {
     // TODO
-    return students[0];
+    int maxscoreindex=0;
+    for(int i=1; i<n; i++){
+        if(students[i].score> students[maxscoreindex].score){
+            maxscoreindex=i;
+        }
+    }
+    return students[maxscoreindex];
 }

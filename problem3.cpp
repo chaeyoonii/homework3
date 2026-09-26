@@ -16,6 +16,12 @@ using namespace std;
 //   출력 형식: "int: <x>\n"
 //   x      : 출력해야 할 인자
 
+void describe(int x){
+std:: cout << "int: " << x << "\n";
+}
+void describe(double x){
+std ::cout << "double: " << x << "\n";
+}
 
 // double 타입 인자 1개를 받는 describe 함수를 작성하세요.
 //   출력 형식: "double: <x>\n"  (소수점 2자리)
@@ -30,5 +36,5 @@ using namespace std;
 //   반환값 : arr[i] 에 대한 int&
 int& elementAt(int* arr, int n, int i) {
     // TODO
-    return arr[0];
+    return arr[i];
 }

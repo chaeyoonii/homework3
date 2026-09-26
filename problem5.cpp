@@ -1,9 +1,8 @@
 /*
  * Problem 5: refactoring
  *
- * 학번:
- * 이름:
- *
+ * 학번:202502190
+ * 이름:김채윤
  * ─────────────────────────────────────────────────────────────
  * 프로그램의 동작을 바꾸지 않고 코드를 리팩터링하세요.
  *
@@ -41,16 +40,21 @@
 /*
  * 과제
  * 1. 가장 먼저 개선하고 싶었던 부분은 무엇이었나요?
- * >
+ * >의미가 불분명한 함수 이름과 하나의 함수에서 여러 역할을 수행하는 동작들을 분리해 각 함수의 역할을 더 강화시키고 개선하고 싶었습니다.
+ * 
  * 2. 함수 하나를 새로 추출했다면, 그 함수가 담당하는 한 가지 역할은 무엇인가요?
- * >
+ * >calculateTotalPrice()는 모든 아이템의 가격을 합산하는 역할만 담당하도록 했습니다.또한 
  * 3. Item&와 const Item& 중 어떤 것을 사용했으며 그 이유는 무엇인가요?
- * >
+ * >아이템의 값을 변경해야 하는 경우에는 Item&을 사용하고, 값을 읽기만 하는 경우에는 const Item&을 사용했습니디.
+ * 예를들어 updateItemQuality()에서는 Item의 days와 quality를 변경하므로 Item&을 사용했습니다.그렇지 않은 경우는 const Item&을 썼습니다.
  * 4. 리팩터링 전보다 코드의 의도가 더 잘 드러나는 부분 한 곳을 설명해 주세요.
- * >
+ * >기존의 cal()함수는 mode값에 따라 가격 품질 만료여부를 모두 계산해 함수의 목적을 한눈에 파악하기 어려웠습니다.
+ * 이를 calculateTotalPrice(), countHighQualityItems(), countExpiredItems()로 분리하여 함수 이름만 보아도 각각 어떤 작업을 수행하는지 알 수 있도록 개선했습니다.
  */
+
 #include <iostream>
 #include <string>
+#include <vector>
 
 struct Item {
     std::string name;
@@ -59,125 +63,164 @@ struct Item {
     int price;
 };
 
-void p(Item& a, int d, bool verbose) {
-    // update inventory state and print information
-    if (a.name == "Cheese") {
-        if (a.days > 0) {
-            if (a.quality < 50) {
-                a.quality = a.quality + 1;
-            }
-        } else {
-            if (a.quality < 49) {
-                a.quality = a.quality + 2;
-            } else {
-                a.quality = 50;
-            }
+void limitQuality(Item& item) {
+    if (item.quality < 0) {
+        item.quality = 0;
+    }
+
+    if (item.quality > 50) {
+        item.quality = 50;
+    }
+}
+
+
+void updateItemQuality(Item& item) {
+    if (item.name == "Legendary") {
+        return;
+    }
+
+    if (item.name == "Cheese") {
+        item.quality += (item.days > 0) ? 1 : 2;
+    }
+    else if (item.name == "Ticket") {
+        if (item.days > 10) {
+            item.quality += 1;
         }
-    } else if (a.name == "Ticket") {
-        if (a.days > 10) {
-            if (a.quality < 50)
-                a.quality = a.quality + 1;
-        } else if (a.days > 5) {
-            if (a.quality < 49)
-                a.quality = a.quality + 2;
-            else
-                a.quality = 50;
-        } else if (a.days > 0) {
-            if (a.quality < 47)
-                a.quality = a.quality + 3;
-            else
-                a.quality = 50;
-        } else {
-            a.quality = 0;
+        else if (item.days > 5) {
+            item.quality += 2;
         }
-    } else if (a.name == "Legendary") {
-        // nothing changes
-    } else {
-        if (a.days > 0) {
-            if (a.quality > 0)
-                a.quality = a.quality - 1;
-        } else {
-            if (a.quality > 1)
-                a.quality = a.quality - 2;
-            else
-                a.quality = 0;
+        else if (item.days > 0) {
+            item.quality += 3;
+        }
+        else {
+            item.quality -= 2;
+        }
+    }
+    else {
+        item.quality -= (item.days > 0) ? 1 : 2;
+    }
+
+    item.days -= 1;
+    limitQuality(item);
+}
+
+
+int calculateTotalPrice(const std::vector<Item>& items) {
+    int totalPrice = 0;
+
+    for (const Item& item : items) {
+        totalPrice += item.price;
+    }
+
+    return totalPrice;
+}
+
+
+int countHighQualityItems(const std::vector<Item>& items) {
+    int count = 0;
+
+    for (const Item& item : items) {
+        if (item.quality >= 40) {
+            count++;
         }
     }
 
-    if (a.name != "Legendary") {
-        a.days = a.days - d;
+    return count;
+}
+
+int countExpiredItems(const std::vector<Item>& items) {
+    int count = 0;
+
+    for (const Item& item : items) {
+        if (item.days <= 0) {
+            count++;
+        }
     }
 
-    if (a.quality < 0)
-        a.quality = 0;
+    return count;
+}
 
-    if (a.quality > 50 && a.name != "Legendary")
-        a.quality = 50;
 
-    if (verbose) {
-        std::cout << a.name << ": "
-                  << "days=" << a.days
-                  << ", quality=" << a.quality
-                  << ", price=" << a.price
+Item* findItemByName(
+    std::vector<Item>& items,
+    const std::string& itemName
+) {
+    for (Item& item : items) {
+        if (item.name == itemName) {
+            return &item;
+        }
+    }
+
+    return nullptr;
+}
+
+
+void discountCheesePrice(std::vector<Item>& items) {
+    Item* cheese = findItemByName(items, "Cheese");
+
+    if (cheese == nullptr) {
+        return;
+    }
+
+    cheese->price -= 500;
+
+    if (cheese->price < 0) {
+        cheese->price = 0;
+    }
+}
+
+
+void updateItemsForOneDay(std::vector<Item>& items) {
+    for (Item& item : items) {
+        updateItemQuality(item);
+    }
+}
+
+// 하루의 결과를 출력
+void printDailyResult(
+    const std::vector<Item>& items,
+    int day
+) {
+    std::cout << "======== Day " << day << " ========" << std::endl;
+
+    for (const Item& item : items) {
+        std::cout << item.name
+                  << ": days=" << item.days
+                  << ", quality=" << item.quality
+                  << ", price=" << item.price
                   << std::endl;
     }
+
+    std::cout << "Total price: "
+              << calculateTotalPrice(items)
+              << std::endl;
+
+    std::cout << "High-quality items: "
+              << countHighQualityItems(items)
+              << std::endl;
+
+    std::cout << "Expired items: "
+              << countExpiredItems(items)
+              << std::endl;
 }
 
-int calc(Item items[], int n, int mode) {
-    int r = 0;
-
-    for (int i = 0; i < n; ++i) {
-        if (mode == 0) {
-            r = r + items[i].price;
-        } else if (mode == 1) {
-            if (items[i].quality >= 40)
-                r = r + 1;
-        } else if (mode == 2) {
-            if (items[i].days <= 0)
-                r = r + 1;
-        }
-    }
-
-    return r;
-}
-
-Item* f(Item items[], int n, const std::string& s) {
-    Item* r = nullptr;
-
-    for (int i = 0; i < n; ++i) {
-        if (items[i].name == s) {
-            r = &items[i];
-            break;
-        }
-    }
-
-    return r;
-}
-
-void run(Item items[], int n, int days, bool verbose) {
-    for (int day = 1; day <= days; ++day) {
-        if (verbose) {
-            std::cout << "======== Day " << day << " ========" << std::endl;
-        }
-
-        for (int i = 0; i < n; ++i) {
-            p(items[i], 1, verbose);
-        }
-
-        int total = calc(items, n, 0);
-        int good = calc(items, n, 1);
-        int expired = calc(items, n, 2);
+// 지정된 날짜 수만큼 아이템 상태를 업데이트
+void runSimulation(
+    std::vector<Item>& items,
+    int numberOfDays,
+    bool verbose
+) {
+    for (int day = 1; day <= numberOfDays; ++day) {
+        updateItemsForOneDay(items);
 
         if (verbose) {
-            std::cout << "Total price: " << total << std::endl;
-            std::cout << "High-quality items: " << good << std::endl;
-            std::cout << "Expired items: " << expired << std::endl;
+            printDailyResult(items, day);
         }
     }
 }
 
 int main() {
-    Item items[] = {
+    std::vector<Item> items = {
         {"Normal", 5, 10, 1000},
         {"Cheese", 3, 20, 3000},
         {"Ticket", 8, 25, 5000},
@@ -185,23 +228,25 @@ int main() {
         {"Normal", 1, 2, 1500}
     };
 
-    const int n = sizeof(items) / sizeof(items[0]);
-
     std::cout << "Before update" << std::endl;
-    for (int i = 0; i < n; ++i) {
-        std::cout << items[i].name << ": "
-                  << items[i].days << ", "
-                  << items[i].quality << std::endl;
+
+    for (const Item& item : items) {
+        std::cout << item.name << ": "
+                  << item.days << ", "
+                  << item.quality
+                  << std::endl;
     }
 
-    run(items, n, 3, true);
+    runSimulation(items, 3, true);
 
-    Item* x = f(items, n, "Cheese");
+    discountCheesePrice(items);
 
-    if (x != nullptr) {
-        x->price = x->price - 500;
+    Item* cheese = findItemByName(items, "Cheese");
+
+    if (cheese != nullptr) {
         std::cout << "Discounted Cheese price: "
-                  << x->price << std::endl;
+                  << cheese->price
+                  << std::endl;
     }
 
     return 0;

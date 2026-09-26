@@ -20,6 +20,7 @@
 //   delta : 더할 정수
 void addViaRef(int& r, int delta) {
     // TODO
+    r = r+delta;
 }
 
 // a 와 b 의 합을 반환합니다.
@@ -27,23 +28,29 @@ void addViaRef(int& r, int delta) {
 //   반환값 : a + b
 int sumByConstRef(const int& a, const int& b) {
     // TODO
-    return 0;
+    return a+b;
 }
 
 // a 와 b 가 참조하는 두 정수 값을 교환합니다.
 //   a, b : 교환할 두 정수에 대한 참조
 void swapByRef(int& a, int& b) {
     // TODO
+    int temp=0;
+    temp=a;
+    a=b;
+    b=temp;  
 }
 
 // r 이 참조하는 정수를 1 증가시킵니다.
 //   r : 수정할 정수에 대한 참조
 void incrementByRef(int& r) {
     // TODO
+   r++; 
 }
 
 // p 가 가리키는 정수를 1 증가시킵니다.
 //   p : 수정할 정수를 가리키는 포인터
 void incrementByPtr(int* p) {
     // TODO
+ (*p)++;
 }
